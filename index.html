@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer">
+  <title>2048 game</title>
+</head>
+<body>
+    <header class="header">
+        <h1 class="header__title">2048</h1>
+
+        <div class="header__actions">
+            <button type="button" id="leaderboard-btn" class="icon-btn" aria-label="Leaderboard">
+                <i class="fa-solid fa-trophy" aria-hidden="true"></i>
+            </button>
+
+            <button type="button" id="undo-btn" class="icon-btn" aria-label="One move back" disabled>
+                <i class="fa-solid fa-rotate-left" aria-hidden="true"></i>
+            </button>
+
+            <button type="button" id="restart-btn" class="icon-btn" aria-label="Start again">
+                <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
+            </button>
+
+            <div class="score" aria-live="polite">
+                <span class="score__label">Points</span>
+                <span class="score__value" id="score">0</span>
+            </div>
+        </div>
+    </header>
+            
+    <main class="main">
+
+        <div class="board" id="board" role="grid" aria-label="Field 4x4" tabindex="0">
+            <div class="board__grid" id="grid" aria-hidden="true"></div>
+            <div class="board__tiles" id="tiles"></div>
+        </div>
+
+        <div class="mobile-controls" id="mobile-controls">
+            <button type="button" data-move="up"    aria-label="up">
+                <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+            </button>
+            <button type="button" data-move="left"  aria-label="left">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            </button>
+            <button type="button" data-move="down"  aria-label="down">
+                <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+            </button>
+            <button type="button" data-move="right" aria-label="right">
+                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </button>
+        </div>
+    </main>
+        
+
+    <div id="leaderboard-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title" hidden>
+        <div class="modal__content">
+            <h2 class="modal__title" id="leaderboard-title">Leaderboard</h2>
+
+            <table class="leaderboard">
+            <thead>
+                <tr><th>Name</th><th>Points</th><th>Date</th></tr>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+            </table>
+            <p class="modal__desc" id="leaderboard-empty">No info yet</p>
+
+            <button type="button" class="modal__close icon-btn" data-close="leaderboard-modal"
+                    aria-label="Close">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+
+
+    <div class="modal" id="gameover-modal" role="dialog" aria-modal="true"
+     aria-labelledby="gameover-title" hidden>
+        <div class="modal__content">
+            <h2 class="modal__title" id="gameover-title">Game over!</h2>
+            <p class="modal__desc">Your result: <span id="final-score">0</span></p>
+
+            <form id="save-score-form" class="save-form">
+                <label for="player-name">Name:</label>
+                <input type="text" id="player-name" name="username"
+                        maxlength="30" autocomplete="off" required>
+                <button type="submit" class="btn">Save result</button>
+            </form>
+
+            <p class="modal__desc" id="save-status" hidden>Your record was saved!</p>
+
+            <button type="button" id="restart-from-modal" class="btn">
+                <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
+                Restart
+            </button>
+        </div>
+    </div>
+    <script src="js/main.js"></script>
+</body>
+</html>
