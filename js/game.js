@@ -1,12 +1,10 @@
 
 const SIZE = 4;
 
-// Создаем пустое игровое поле
 export function createEmptyBoard() {
     return Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
 }
 
-// Возвращаем список свободных клеток
 function getEmptyCells(board) {
     const emptyCells = [];
 
@@ -21,7 +19,6 @@ function getEmptyCells(board) {
     return emptyCells;
 }
 
-// Добавляем новую плитку со значением 2 или 4
 export function addRandomTile(board) {
     const emptyCells = getEmptyCells(board);
 
@@ -37,11 +34,9 @@ export function addRandomTile(board) {
     return true;
 }
 
-// Создаем новое игровое поле
 export function createNewGame() {
     const board = createEmptyBoard();
 
-    // В начале игры появляется от 1 до 3 плиток
     const tilesCount = Math.floor(Math.random() * 3) + 1;
 
     for (let i = 0; i < tilesCount; i++) {
@@ -55,13 +50,11 @@ export function createNewGame() {
     };
 }
 
-// Перемещаем плитки влево
 
 function moveRowLeft(row) {
     let numbers = row.filter(value => value !== 0);
     let score = 0;
 
-    // Повторяем объединение, пока остаются одинаковые соседние плитки
     while (true) {
         const result = [];
         let merged = false;
@@ -94,7 +87,6 @@ function moveRowLeft(row) {
     return { row: numbers, score };
 }
 
-// Получаем координаты одной линии в зависимости от направления
 function getLineCoordinates(direction, index) {
     const coordinates = [];
 
@@ -119,7 +111,6 @@ function getLineCoordinates(direction, index) {
     return coordinates;
 }
 
-// Проверяем, изменилось ли поле
 function isBoardChanged(oldBoard, newBoard) {
     for (let row = 0; row < SIZE; row++) {
         for (let col = 0; col < SIZE; col++) {
@@ -132,14 +123,11 @@ function isBoardChanged(oldBoard, newBoard) {
     return false;
 }
 
-// Проверяем, закончилась ли игра
 export function checkGameOver(board) {
-    // Если есть хотя бы одна пустая клетка, игра продолжается
     if (getEmptyCells(board).length > 0) {
         return false;
     }
 
-    // Проверяем соседние плитки по горизонтали и вертикали
     for (let row = 0; row < SIZE; row++) {
         for (let col = 0; col < SIZE; col++) {
             const current = board[row][col];
@@ -157,7 +145,6 @@ export function checkGameOver(board) {
     return true;
 }
 
-// Выполняем ход
 export function moveBoard(board, direction) {
     if (!["left", "right", "up", "down"].includes(direction)) {
         return {
@@ -179,7 +166,6 @@ export function moveBoard(board, direction) {
 
         score += result.score;
 
-        // Записываем обработанную линию обратно на поле
         coordinates.forEach(([row, col], index) => {
             newBoard[row][col] = result.row[index];
         });
