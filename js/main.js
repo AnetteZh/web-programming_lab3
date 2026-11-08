@@ -32,6 +32,10 @@ let gameState;
 // История предыдущих ходов
 let history = [];
 
+// Пока плитки анимируются, новые ходы не принимаются.
+let isAnimating = false;
+let animationTimeout = null;
+
 // Создаем копию состояния для сохранения в истории
 function copyState(state) {
     return {
@@ -47,14 +51,21 @@ function saveCurrentGame() {
 }
 
 // Обновляем отображение игры
-function updateUI() {
-    renderBoard(gameState.board);
+function updateUI(movements = null) {
+    renderBoard(gameState.board, movements);
     renderScore(gameState.score);
-    renderUndoButton(history.length > 0 && !gameState.isGameOver);
+
+    renderUndoButton(
+        history.length > 0 && !gameState.isGameOver && !isAnimating
+    );
 }
 
 // Начинаем новую игру
 function restartGame() {
+    // Сбрасываем блокировку и старый таймер анимации.
+    clearTimeout(animationTimeout);
+    isAnimating = false;
+
     gameState = createNewGame();
     history = [];
 
@@ -67,7 +78,7 @@ function restartGame() {
 
 // Обрабатываем движение плиток
 function handleMove(direction) {
-    if (gameState.isGameOver) {
+    if (gameState.isGameOver || isAnimating) {
         return;
     }
 
@@ -97,8 +108,14 @@ function handleMove(direction) {
     // Проверяем, закончилась ли игра
     gameState.isGameOver = checkGameOver(gameState.board);
 
-    updateUI();
+    isAnimating = true;
+    updateUI(result.movements);
     saveCurrentGame();
+
+    // Движение длится 180 мс, затем может идти короткий эффект слияния.
+    animationTimeout = setTimeout(() => {
+        isAnimating = false;
+    }, 370);
 
     if (gameState.isGameOver) {
         showGameOver(gameState.score);
@@ -108,7 +125,7 @@ function handleMove(direction) {
 // Отменяем предыдущий ход
 function handleUndo() {
     // После окончания игры отмена запрещена
-    if (gameState.isGameOver || history.length === 0) {
+    if (gameState.isGameOver || isAnimating || history.length === 0) {
         return;
     }
 

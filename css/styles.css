@@ -172,14 +172,19 @@ body.modal-open .mobile-controls {
     aspect-ratio: 1 / 1;
     padding: 10px;
     box-sizing: border-box;
-    background: rgb(190, 155, 155);
-    border-radius: 10px;
+    background: rgb(194, 217, 228);
+    border-radius: 8px;
 }
+
+/* Сетка и слой с плитками */
 
 .board__grid,
 .board__tiles {
     position: absolute;
     inset: 10px;
+}
+
+.board__grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(4, 1fr);
@@ -191,97 +196,63 @@ body.modal-open .mobile-controls {
 }
 
 .grid-cell {
-    background: rgba(255, 255, 255, 0.35);
-    border-radius: 6px;
+    background: rgba(136, 186, 211, 0.35);
+    border-radius: 5px;
 }
 
 .board__tiles {
     pointer-events: none;
 }
 
-/* Плитки */
+/* Стили плиток */
 
 .tile {
+    position: absolute;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
 
-    border-radius: 6px;
+    border-radius: 5px;
 
     font-size: clamp(1.2rem, 6vw, 2rem);
     font-weight: bold;
+
     color: #776e65;
+    z-index: 1;
 
-    user-select: none;
-
-    animation: tile-appear 0.18s ease;
+    /* Сохраняем DOM-элемент и плавно меняем только его координаты. */
+    transition: left 180ms ease-in-out,
+                top 180ms ease-in-out,
+                transform 180ms ease-in-out,
+                opacity 180ms ease-in-out;
+    will-change: left, top;
 }
 
-/* Цвета плиток */
-
-.tile-2 {
-    background: #eee4da;
+.tile--removing {
+    transform: scale(0.2);
+    opacity: 0;
 }
 
-.tile-4 {
-    background: #ede0c8;
+.tile--merge {
+    animation: tile-merge 160ms ease-out;
 }
 
-.tile-8 {
-    background: #f2b179;
-    color: white;
+@keyframes tile-merge {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+    100% { transform: scale(1); }
 }
 
-.tile-16 {
-    background: #f59563;
-    color: white;
-}
+/* Анимация появления новой плитки */
 
-.tile-32 {
-    background: #f67c5f;
-    color: white;
+.tile--new {
+    animation: tile-appear 180ms ease;
 }
-
-.tile-64 {
-    background: #f65e3b;
-    color: white;
-}
-
-.tile-128 {
-    background: #edcf72;
-    color: white;
-    font-size: clamp(1rem, 5vw, 1.7rem);
-}
-
-.tile-256 {
-    background: #edcc61;
-    color: white;
-    font-size: clamp(1rem, 5vw, 1.7rem);
-}
-
-.tile-512 {
-    background: #edc850;
-    color: white;
-    font-size: clamp(1rem, 5vw, 1.7rem);
-}
-
-.tile-1024 {
-    background: #edc53f;
-    color: white;
-    font-size: clamp(.9rem, 4.5vw, 1.5rem);
-}
-
-.tile-2048 {
-    background: #edc22e;
-    color: white;
-    font-size: clamp(.9rem, 4.5vw, 1.5rem);
-}
-
-/* Анимация появления плитки */
 
 @keyframes tile-appear {
     from {
-        transform: scale(0.7);
+        transform: scale(0.5);
         opacity: 0.5;
     }
 
@@ -290,6 +261,72 @@ body.modal-open .mobile-controls {
         opacity: 1;
     }
 }
+
+/* Цвета плиток */
+
+.tile-2 {
+    background: rgb(255, 238, 243);
+}
+
+.tile-4 {
+    background: rgb(251, 179, 187);
+}
+
+.tile-8 {
+    background: rgb(244, 148, 159);
+    color: white;
+}
+
+.tile-16 {
+    background: rgb(230, 111, 125);
+    color: white;
+}
+
+.tile-32 {
+    background: rgb(215, 75, 91);
+    color: white;
+}
+
+.tile-64 {
+    background: rgb(152, 39, 52);
+    color: white;
+}
+
+.tile-128 {
+    background: rgb(112, 176, 56);
+    color: white;
+}
+
+.tile-256 {
+    background:  rgb(88, 144, 39);
+    color: white;
+}
+
+.tile-512 {
+    background: rgb(66, 114, 23);
+    color: white;
+}
+
+.tile-1024 {
+    background: rgb(50, 93, 14);
+    color: white;
+}
+
+.tile-2048 {
+    background: rgb(37, 73, 8);
+    color: white;
+}
+
+/* Уменьшаем анимации, если пользователь
+   предпочитает меньше движения */
+
+@media (prefers-reduced-motion: reduce) {
+    .tile {
+        transition: none;
+        animation: none;
+    }
+}
+
 
 /* Модальные окна */
 

@@ -51,19 +51,36 @@ export function createNewGame() {
 }
 
 
+
 function moveRowLeft(row) {
-    let numbers = row.filter(value => value !== 0);
+    // Вместо обычных чисел используем объекты,
+    // чтобы не потерять исходные координаты плиток
+    let numbers = row.filter(cell => cell.value !== 0);
+
     let score = 0;
 
+    // Повторяем объединение, пока есть одинаковые соседние плитки
     while (true) {
         const result = [];
         let merged = false;
 
         for (let i = 0; i < numbers.length; i++) {
-            if (numbers[i] === numbers[i + 1]) {
-                const newValue = numbers[i] * 2;
+            if (
+                numbers[i + 1] &&
+                numbers[i].value === numbers[i + 1].value
+            ) {
+                const newValue = numbers[i].value * 2;
 
-                result.push(newValue);
+                result.push({
+                    value: newValue,
+
+                    // Запоминаем координаты обеих исходных плиток
+                    sources: [
+                        ...numbers[i].sources,
+                        ...numbers[i + 1].sources
+                    ]
+                });
+
                 score += newValue;
 
                 i++;
@@ -80,11 +97,10 @@ function moveRowLeft(row) {
         }
     }
 
-    while (numbers.length < SIZE) {
-        numbers.push(0);
-    }
-
-    return { row: numbers, score };
+    return {
+        cells: numbers,
+        score
+    };
 }
 
 function getLineCoordinates(direction, index) {
@@ -145,35 +161,66 @@ export function checkGameOver(board) {
     return true;
 }
 
+
 export function moveBoard(board, direction) {
     if (!["left", "right", "up", "down"].includes(direction)) {
         return {
             board,
             score: 0,
-            moved: false
+            moved: false,
+            movements: []
         };
     }
 
     const newBoard = createEmptyBoard();
+
     let score = 0;
+    const movements = [];
 
     for (let i = 0; i < SIZE; i++) {
         const coordinates = getLineCoordinates(direction, i);
 
-        const line = coordinates.map(([row, col]) => board[row][col]);
+        // Получаем плитки и запоминаем их старые координаты
+        const line = coordinates.map(([row, col]) => ({
+            value: board[row][col],
+            sources: [{
+                row,
+                col
+            }]
+        }));
 
         const result = moveRowLeft(line);
 
         score += result.score;
 
-        coordinates.forEach(([row, col], index) => {
-            newBoard[row][col] = result.row[index];
+        // Записываем результат обработки линии
+        result.cells.forEach((cell, index) => {
+            const [toRow, toCol] = coordinates[index];
+
+            newBoard[toRow][toCol] = cell.value;
+
+            // Запоминаем перемещение каждой исходной плитки
+            cell.sources.forEach((source, sourceIndex) => {
+                movements.push({
+                    fromRow: source.row,
+                    fromCol: source.col,
+                    toRow,
+                    toCol,
+                    value: cell.value,
+                    // Первая плитка становится итоговой,
+                    // остальные плавно сходятся с ней и исчезают.
+                    survivor: sourceIndex === 0,
+                    merged: cell.sources.length > 1
+                });
+            });
         });
     }
 
     return {
         board: newBoard,
         score,
-        moved: isBoardChanged(board, newBoard)
+        moved: isBoardChanged(board, newBoard),
+        movements
     };
 }
+
