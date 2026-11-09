@@ -327,6 +327,17 @@ body.modal-open .mobile-controls {
     }
 }
 
+@media (min-width: 769px) and (hover: hover) and (pointer: fine) {
+  .header {
+    padding-top: 2.5rem;       
+    padding-bottom: 1.75rem;  
+    gap: 1.5rem;               
+  }
+
+  .main {
+    padding-top: 1rem;          
+  }
+}
 
 /* Модальные окна */
 
