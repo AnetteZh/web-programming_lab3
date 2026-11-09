@@ -14,3 +14,7 @@
 состояние ряда - [2, 2, 2, 2], после движения влево - [8, 0, 0, 0]
 
 Игра завершается при невозможности совершить движение плиток в любую из 4х сторон
+
+Ссылка на github pages - https://anettezh.github.io/anettezh.github.io-2048/
+
+Видео с игрой - https://drive.google.com/file/d/1E4FIA_DMTyjhxD6JwhWYKrv6A8K6pA3g/view?usp=sharing
