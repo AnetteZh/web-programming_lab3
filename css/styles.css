@@ -1,182 +1,190 @@
-[hidden] { display: none !important; }
+/* Общие настройки и переменные */
+
+:root {
+    --pink: rgb(236, 151, 151);
+    --pink-hover: rgb(185, 125, 125);
+    --pink-active: rgb(181, 108, 108);
+    --on-pink: #ffffff;
+
+    --btn-size: 3.75rem;
+    --score-width: 9.5rem;
+
+    --board-background: rgb(194, 217, 228);
+    --cell-background: rgba(136, 186, 211, 0.35);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+[hidden] {
+    display: none !important;
+}
 
 body {
-  font-family: 'Courier New', monospace;
-  margin: 0;
-  min-height: 100vh;
-  background-color: rgb(254, 231, 231);
-  display: grid;
-  grid-template-rows: auto 1fr;
-  justify-items: center;   
-  align-content: start;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    justify-items: center;
+    align-content: start;
+
+    min-height: 100vh;
+    margin: 0;
+
+    background-color: rgb(254, 231, 231);
+    font-family: "Courier New", monospace;
 }
 
-.main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
+button,
+input {
+    font: inherit;
 }
+
+/* Заголовок, кнопки и счёт */
 
 .header {
-  display: flex;
-  flex-direction: column;   
-  align-items: center;     
-  gap: .75rem;
-  padding: 1rem 1rem .5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+
+    padding: 1rem 1rem 0.5rem;
 }
 
 .header__title {
-  margin: 0;
-  text-align: center;
-  font-size: clamp(2rem, 8vw, 3.5rem);
-  letter-spacing: .08em;
-  line-height: 1;
+    margin: 0;
+
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-align: center;
 }
 
 .header__actions {
-  display: flex;
-  flex-direction: row;     
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-  flex-wrap: wrap;        
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
-
-
-
-:root {
-  --pink:        rgb(236, 151, 151);
-  --pink-hover:  rgb(185, 125, 125);
-  --pink-active: rgb(181, 108, 108);
-  --on-pink:     #ffffff;
-
-  --btn-size:  3.75rem;   
-  --score-w:   9.5rem;    
-}
-
 
 .icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: var(--btn-size);
-  min-height: var(--btn-size);
-  padding: .6rem;
-  border: 0;
-  border-radius: .5rem;
-  background: var(--pink);
-  color: var(--on-pink);
-  font-size: 1.3rem;          
-  line-height: 1;
-  cursor: pointer;
-  box-sizing: border-box;    
-  transition: background-color .15s ease, transform .05s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: var(--btn-size);
+    min-height: var(--btn-size);
+    padding: 0.6rem;
+
+    border: 0;
+    border-radius: 0.5rem;
+    background: var(--pink);
+    color: var(--on-pink);
+
+    font-size: 1.3rem;
+    line-height: 1;
+    cursor: pointer;
+
+    transition: background-color 0.15s ease, transform 0.05s ease;
 }
 
+.icon-btn:hover:not(:disabled) {
+    background: var(--pink-hover);
+}
+
+.icon-btn:active:not(:disabled) {
+    background: var(--pink-active);
+    transform: translateY(1px);
+}
+
+.icon-btn:disabled {
+    background: var(--pink);
+    opacity: 0.35;
+    cursor: default;
+}
+
+.icon-btn:focus-visible,
+.btn:focus-visible,
+.mobile-controls button:focus-visible {
+    outline: 2px solid var(--pink-active);
+    outline-offset: 3px;
+}
 
 .score {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;   
-  gap: .5rem;
-  min-width: var(--score-w);        
-  min-height: var(--btn-size);
-  padding: .5rem .75rem;
-  border-radius: .5rem;
-  background: rgb(234, 86, 103);
-  color: var(--on-pink);
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+
+    min-width: var(--score-width);
+    min-height: var(--btn-size);
+    padding: 0.5rem 0.75rem;
+
+    border-radius: 0.5rem;
+    background: rgb(234, 86, 103);
+    color: var(--on-pink);
+
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
 }
 
 .score__label {
-  font-size: .8rem;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  opacity: .85;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.85;
 }
 
 .score__value {
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-align: right;
-  min-width: 3ch;                  
+    min-width: 3ch;
+
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: right;
 }
-
-.icon-btn:hover:not(:disabled)   { background: var(--pink-hover); }
-.icon-btn:active:not(:disabled)  { background: var(--pink-active); transform: translateY(1px); }
-
-.icon-btn:disabled {
-  background: var(--pink);
-  opacity: .35;
-  cursor: default;
-}
-
-.icon-btn:focus-visible {
-  outline: 2px solid var(--pink-active);
-  outline-offset: 2px;
-}
-
-
 
 .btn {
-  padding: .55rem 1rem;
-  border: 0;
-  border-radius: .5rem;
-  background: var(--pink);
-  color: var(--on-pink);
-  font: inherit;
-  cursor: pointer;
-  transition: background-color .15s ease;
-}
-.btn:hover  { background: var(--pink-hover); }
-.btn:active { background: var(--pink-active); }
+    padding: 0.55rem 1rem;
 
-.mobile-controls {
-  display: none;
+    border: 0;
+    border-radius: 0.5rem;
+    background: var(--pink);
+    color: var(--on-pink);
+
+    cursor: pointer;
+    transition: background-color 0.15s ease;
 }
 
-@media (max-width: 768px), (hover: none) and (pointer: coarse) {
-  .mobile-controls {
-    display: grid;
-    grid-template-areas:
-      ".    up    ."
-      "left down  right";
-    grid-template-columns: repeat(3, var(--btn-size));
-    grid-template-rows: repeat(2, var(--btn-size));
-    gap: .5rem;
-    justify-content: center;
-    margin-top: 1rem;
-  }
-
-  .mobile-controls [data-move="up"]    { grid-area: up; }
-  .mobile-controls [data-move="left"]  { grid-area: left; }
-  .mobile-controls [data-move="down"]  { grid-area: down; }
-  .mobile-controls [data-move="right"] { grid-area: right; }
+.btn:hover {
+    background: var(--pink-hover);
 }
 
-body.modal-open .mobile-controls {
-  display: none;
+.btn:active {
+    background: var(--pink-active);
 }
 
+/* Игровое поле и пустые клетки */
 
+.main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 
-/* Игровое поле */
+    width: 100%;
+}
 
 .board {
     position: relative;
+
     width: min(90vw, 440px);
     aspect-ratio: 1 / 1;
     padding: 10px;
-    box-sizing: border-box;
-    background: rgb(194, 217, 228);
-    border-radius: 8px;
-}
 
-/* Сетка и слой с плитками */
+    border-radius: 8px;
+    background: var(--board-background);
+}
 
 .board__grid,
 .board__tiles {
@@ -189,63 +197,64 @@ body.modal-open .mobile-controls {
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(4, 1fr);
     gap: 10px;
-}
 
-.board__grid {
     pointer-events: none;
 }
 
 .grid-cell {
-    background: rgba(136, 186, 211, 0.35);
     border-radius: 5px;
+    background: var(--cell-background);
 }
 
 .board__tiles {
     pointer-events: none;
 }
 
-/* Стили плиток */
+/* Плитки: положение, движение и появление */
 
 .tile {
     position: absolute;
+    z-index: 1;
+
     display: flex;
-    justify-content: center;
     align-items: center;
-    box-sizing: border-box;
+    justify-content: center;
 
     border-radius: 5px;
+    color: #776e65;
 
     font-size: clamp(1.2rem, 6vw, 2rem);
     font-weight: bold;
 
-    color: #776e65;
-    z-index: 1;
-
-    /* Сохраняем DOM-элемент и плавно меняем только его координаты. */
-    transition: left 180ms ease-in-out,
-                top 180ms ease-in-out,
-                transform 180ms ease-in-out,
-                opacity 180ms ease-in-out;
+    /* JS меняет координаты, CSS плавно перемещает плитку */
+    transition:
+        left 180ms ease-in-out,
+        top 180ms ease-in-out,
+        transform 180ms ease-in-out,
+        opacity 180ms ease-in-out;
     will-change: left, top;
 }
 
-.tile--removing {
-    transform: scale(0.2);
-    opacity: 0;
-}
-
+/* Плитка, которая получилась после слияния */
 .tile--merge {
     animation: tile-merge 160ms ease-out;
 }
 
 @keyframes tile-merge {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.12); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.12);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
-/* Анимация появления новой плитки */
-
+/* Новая плитка плавно появляется на поле */
 .tile--new {
     animation: tile-appear 180ms ease;
 }
@@ -262,7 +271,7 @@ body.modal-open .mobile-controls {
     }
 }
 
-/* Цвета плиток */
+/* Цвета плиток в зависимости от значения */
 
 .tile-2 {
     background: rgb(255, 238, 243);
@@ -298,7 +307,7 @@ body.modal-open .mobile-controls {
 }
 
 .tile-256 {
-    background:  rgb(88, 144, 39);
+    background: rgb(88, 144, 39);
     color: white;
 }
 
@@ -317,42 +326,67 @@ body.modal-open .mobile-controls {
     color: white;
 }
 
-/* Уменьшаем анимации, если пользователь
-   предпочитает меньше движения */
-
-@media (prefers-reduced-motion: reduce) {
-    .tile {
-        transition: none;
-        animation: none;
-    }
+/* Ну а вдруг кто-то дойдет до такого */
+.tile-4096 {
+    background: rgb(28, 116, 126);
+    color: white;
 }
 
-@media (min-width: 769px) and (hover: hover) and (pointer: fine) {
-  .header {
-    padding-top: 2.5rem;       
-    padding-bottom: 1.75rem;  
-    gap: 1.5rem;               
-  }
-
-  .main {
-    padding-top: 1rem;          
-  }
+.tile-8192 {
+    background: rgb(22, 91, 111);
+    color: white;
 }
 
-/* Модальные окна */
-
-.modal[hidden] {
-    display: none !important;
+.tile-16384 {
+    background: rgb(54, 70, 128);
+    color: white;
 }
+
+.tile-32768 {
+    background: rgb(91, 58, 132);
+    color: white;
+}
+
+.tile-65536 {
+    background: rgb(128, 48, 105);
+    color: white;
+}
+
+/* Мобильное управление */
+
+.mobile-controls {
+    display: none;
+}
+
+.mobile-controls button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 0;
+    border-radius: 8px;
+    background: var(--pink);
+    color: white;
+
+    font-size: 1.3rem;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.mobile-controls button:active {
+    background: var(--pink-active);
+}
+
+/* Модальные окна и таблица лидеров */
 
 .modal {
     position: fixed;
-    inset: 0;
     z-index: 10;
+    inset: 0;
 
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
 
     padding: 15px;
     background: rgba(0, 0, 0, 0.5);
@@ -363,13 +397,11 @@ body.modal-open .mobile-controls {
 
     width: min(100%, 450px);
     max-height: 85vh;
+    padding: 25px;
     overflow-y: auto;
 
-    padding: 25px;
-    box-sizing: border-box;
-
-    background: white;
     border-radius: 12px;
+    background: white;
     text-align: center;
 }
 
@@ -388,8 +420,8 @@ body.modal-open .mobile-controls {
 
 .leaderboard {
     width: 100%;
-    border-collapse: collapse;
     margin: 20px 0;
+    border-collapse: collapse;
 }
 
 .leaderboard th,
@@ -402,17 +434,66 @@ body.modal-open .mobile-controls {
     display: flex;
     flex-direction: column;
     gap: 10px;
+
     margin: 20px 0;
 }
 
 .save-form input {
     padding: 10px;
+
     border: 1px solid #ccc;
     border-radius: 6px;
-    font: inherit;
 }
 
-/* Адаптивность */
+/* Пока открыто модальное окно, мобильные кнопки не показываем */
+body.modal-open .mobile-controls {
+    display: none;
+}
+
+/* Адаптация под планшеты и смартфоны */
+
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+    .mobile-controls {
+        display: grid;
+        grid-template-areas:
+            ".    up    ."
+            "left down  right";
+        grid-template-columns: repeat(3, var(--btn-size));
+        grid-template-rows: repeat(2, var(--btn-size));
+        gap: 0.5rem;
+        justify-content: center;
+
+        margin-top: 1rem;
+    }
+
+    .mobile-controls [data-move="up"] {
+        grid-area: up;
+    }
+
+    .mobile-controls [data-move="left"] {
+        grid-area: left;
+    }
+
+    .mobile-controls [data-move="down"] {
+        grid-area: down;
+    }
+
+    .mobile-controls [data-move="right"] {
+        grid-area: right;
+    }
+}
+
+@media (min-width: 769px) and (hover: hover) and (pointer: fine) {
+    .header {
+        gap: 1.5rem;
+        padding-top: 2.5rem;
+        padding-bottom: 1.75rem;
+    }
+
+    .main {
+        padding-top: 1rem;
+    }
+}
 
 @media (max-width: 480px) {
     .board {
@@ -421,8 +502,11 @@ body.modal-open .mobile-controls {
 
     .board__grid,
     .board__tiles {
-        gap: 6px;
         inset: 8px;
+    }
+
+    .board__grid {
+        gap: 6px;
     }
 
     .modal__content {
@@ -436,27 +520,11 @@ body.modal-open .mobile-controls {
     }
 }
 
+/* Учитываем системную настройку уменьшения анимации */
 
-.mobile-controls button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border: none;
-    border-radius: 8px;
-
-    background: var(--pink);
-    color: white;
-
-    font-size: 1.3rem;
-    cursor: pointer;
-}
-
-.mobile-controls button:active {
-    background: var(--pink-active);
-}
-
-.mobile-controls button:focus-visible {
-    outline: 2px solid var(--pink-active);
-    outline-offset: 3px;
+@media (prefers-reduced-motion: reduce) {
+    .tile {
+        transition: none;
+        animation: none;
+    }
 }

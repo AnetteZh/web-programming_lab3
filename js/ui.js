@@ -1,30 +1,50 @@
+// Элементы игрового поля и счёта
 const tilesContainer = document.getElementById("tiles");
 const scoreElement = document.getElementById("score");
+const gridContainer = document.getElementById("grid");
 
+// Элементы таблицы лидеров
 const leaderboardModal = document.getElementById("leaderboard-modal");
 const leaderboardBody = document.getElementById("leaderboard-body");
 const leaderboardEmpty = document.getElementById("leaderboard-empty");
 
+// Элементы окна окончания игры
 const gameoverModal = document.getElementById("gameover-modal");
 const finalScore = document.getElementById("final-score");
-
 const saveForm = document.getElementById("save-score-form");
 const saveStatus = document.getElementById("save-status");
 
-const gridContainer = document.getElementById("grid");
+const BOARD_SIZE = 4;
+const MOVE_ANIMATION_WAIT = 190;
+const MERGE_ANIMATION_DURATION = 160;
 
-for (let i = 0; i < 16; i++) {
+// Храним таймеры анимации, чтобы отменять их при перезапуске или undo
+const animationTimers = new Set();
+
+function startAnimationTimer(callback, delay) {
+    const timer = setTimeout(() => {
+        animationTimers.delete(timer);
+        callback();
+    }, delay);
+
+    animationTimers.add(timer);
+}
+
+function clearAnimationTimers() {
+    animationTimers.forEach(timer => clearTimeout(timer));
+    animationTimers.clear();
+}
+
+// Создаём пустые клетки сетки 
+for (let i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
     const cell = document.createElement("div");
     cell.classList.add("grid-cell");
     gridContainer.appendChild(cell);
 }
 
-// Возвращает координаты клетки относительно слоя с плитками.
-// Благодаря этому плитки можно позиционировать абсолютно,
-// а CSS сам плавно анимирует изменение left и top.
-
+// Находим размеры и положение клетки относительно слоя с плитками
 function getCellPosition(row, col) {
-    const cell = gridContainer.children[row * 4 + col];
+    const cell = gridContainer.children[row * BOARD_SIZE + col];
     const cellRect = cell.getBoundingClientRect();
     const layerRect = tilesContainer.getBoundingClientRect();
 
@@ -36,6 +56,7 @@ function getCellPosition(row, col) {
     };
 }
 
+// Устанавливаем плитку в нужную клетку
 function setTilePosition(tile, row, col) {
     const position = getCellPosition(row, col);
 
@@ -45,12 +66,12 @@ function setTilePosition(tile, row, col) {
     tile.style.height = `${position.height}px`;
 }
 
+// Создаём HTML-элемент плитки
 function createTile(value, row, col, isNew = false) {
     const tile = document.createElement("div");
 
     tile.classList.add("tile", `tile-${value}`);
     tile.textContent = value;
-
     tile.dataset.row = row;
     tile.dataset.col = col;
 
@@ -63,23 +84,23 @@ function createTile(value, row, col, isNew = false) {
     return tile;
 }
 
-export function renderBoard(board, movements = null) {
-    if (movements === null) {
-        tilesContainer.innerHTML = "";
+// Полностью отрисовываем поле (например, при запуске или отмене хода)
+function renderStaticBoard(board) {
+    tilesContainer.innerHTML = "";
 
-        for (let row = 0; row < 4; row++) {
-            for (let col = 0; col < 4; col++) {
-                const value = board[row][col];
+    for (let row = 0; row < BOARD_SIZE; row++) {
+        for (let col = 0; col < BOARD_SIZE; col++) {
+            const value = board[row][col];
 
-                if (value !== 0) {
-                    tilesContainer.appendChild(createTile(value, row, col));
-                }
+            if (value !== 0) {
+                tilesContainer.appendChild(createTile(value, row, col));
             }
         }
-
-        return;
     }
+}
 
+// Перемещаем плитки, а после завершения движения выполняем слияния
+function renderAnimatedBoard(board, movements) {
     const oldTiles = new Map();
 
     tilesContainer.querySelectorAll(".tile").forEach(tile => {
@@ -106,7 +127,7 @@ export function renderBoard(board, movements = null) {
             move.fromRow !== move.toRow ||
             move.fromCol !== move.toCol;
 
-        // Сохраняем плитки, которые участвуют в объединении.
+        // Плитки, которые участвуют в слиянии, обрабатываем отдельно
         if (move.merged) {
             if (hasMoved) {
                 tile.style.transition =
@@ -137,8 +158,8 @@ export function renderBoard(board, movements = null) {
         tile.dataset.col = move.toCol;
     });
 
-    // Ждём завершения движения, прежде чем объединять плитки.
-    setTimeout(() => {
+    // Ждём окончания движения, затем обновляем плитки после слияния
+    startAnimationTimer(() => {
         tilesToRemove.forEach(tile => tile.remove());
 
         tilesToUpdate.forEach(({ tile, move }) => {
@@ -147,16 +168,17 @@ export function renderBoard(board, movements = null) {
             tile.className = `tile tile-${move.value}`;
             tile.textContent = move.value;
 
+            // Оставляем исходную анимацию объединения
             tile.classList.add("tile--merge");
 
-            setTimeout(() => {
+            startAnimationTimer(() => {
                 tile.classList.remove("tile--merge");
-            }, 160);
+            }, MERGE_ANIMATION_DURATION);
         });
 
-        // Добавляем новые плитки после завершения движения.
-        for (let row = 0; row < 4; row++) {
-            for (let col = 0; col < 4; col++) {
+        // Новые плитки появляются после завершения движения
+        for (let row = 0; row < BOARD_SIZE; row++) {
+            for (let col = 0; col < BOARD_SIZE; col++) {
                 const value = board[row][col];
                 const key = `${row}-${col}`;
 
@@ -169,10 +191,23 @@ export function renderBoard(board, movements = null) {
                 );
             }
         }
-    }, 190);
+    }, MOVE_ANIMATION_WAIT);
 }
 
-// При изменении размера окна пересчитываем координаты без анимации.
+// Перерисовываем поле с анимацией или без неё
+export function renderBoard(board, movements = null) {
+    // Незавершённая анимация не должна менять уже обновлённое поле
+    clearAnimationTimers();
+
+    if (movements === null) {
+        renderStaticBoard(board);
+        return;
+    }
+
+    renderAnimatedBoard(board, movements);
+}
+
+// При изменении размера окна сохраняем расположение плиток
 window.addEventListener("resize", () => {
     const tiles = tilesContainer.querySelectorAll(".tile");
 
@@ -188,22 +223,25 @@ window.addEventListener("resize", () => {
     });
 });
 
+// Обновляем счёт и доступность кнопки отмены
 export function renderScore(score) {
     scoreElement.textContent = score;
 }
 
 export function renderUndoButton(canUndo) {
-    const undoButton = document.getElementById("undo-btn");
-    undoButton.disabled = !canUndo;
+    document.getElementById("undo-btn").disabled = !canUndo;
 }
 
-export function showGameOver(score) {
+// Показываем окно окончания игры. Если рекорд уже сохранён, форму не показываем
+export function showGameOver(score, isSaved = false) {
     finalScore.textContent = score;
 
-    saveForm.hidden = false;
-    saveStatus.hidden = true;
+    saveForm.hidden = isSaved;
+    saveStatus.hidden = !isSaved;
 
-    saveForm.reset();
+    if (!isSaved) {
+        saveForm.reset();
+    }
 
     gameoverModal.hidden = false;
     document.body.classList.add("modal-open");
@@ -214,22 +252,29 @@ export function hideGameOver() {
     document.body.classList.remove("modal-open");
 }
 
+// После сохранения результата заменяем форму сообщением
 export function showSavedMessage() {
+    saveStatus.textContent = "Your record was saved!";
     saveForm.hidden = true;
     saveStatus.hidden = false;
 }
 
+// Сообщаем, если браузер не смог записать результат в localStorage
+export function showSaveError() {
+    saveStatus.textContent = "Could not save your record. Please try again.";
+    saveStatus.hidden = false;
+}
+
+// Заполняем таблицу лидеров безопасно, используя textContent
 export function showLeaderboard(leaders) {
     leaderboardBody.innerHTML = "";
-
     leaderboardModal.hidden = false;
     document.body.classList.add("modal-open");
 
     leaderboardEmpty.hidden = leaders.length > 0;
 
-    leaders.forEach((leader, index) => {
+    leaders.forEach(leader => {
         const row = document.createElement("tr");
-
         const nameCell = document.createElement("td");
         const scoreCell = document.createElement("td");
         const dateCell = document.createElement("td");
@@ -238,10 +283,7 @@ export function showLeaderboard(leaders) {
         scoreCell.textContent = leader.score;
         dateCell.textContent = leader.date;
 
-        row.appendChild(nameCell);
-        row.appendChild(scoreCell);
-        row.appendChild(dateCell);
-
+        row.append(nameCell, scoreCell, dateCell);
         leaderboardBody.appendChild(row);
     });
 }

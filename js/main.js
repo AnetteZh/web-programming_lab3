@@ -1,4 +1,3 @@
-
 import {
     createNewGame,
     moveBoard,
@@ -20,50 +19,56 @@ import {
     showGameOver,
     hideGameOver,
     showSavedMessage,
+    showSaveError,
     showLeaderboard,
     hideLeaderboard
 } from "./ui.js";
 
 import { initControls } from "./control.js";
 
-// Текущее состояние игры
-let gameState;
+// Сколько времени блокируем новые ходы, пока проигрывается анимация
+const ANIMATION_DURATION = 370;
 
-// История предыдущих ходов
+// Текущее состояние игры и история предыдущих ходов
+let gameState;
 let history = [];
 
-// Пока плитки анимируются, новые ходы не принимаются.
+// Пока плитки анимируются, новые ходы не принимаются
 let isAnimating = false;
 let animationTimeout = null;
 
-// Создаем копию состояния для сохранения в истории
+// Создаём отдельную копию состояния для истории отмены
 function copyState(state) {
     return {
         board: state.board.map(row => [...row]),
         score: state.score,
-        isGameOver: state.isGameOver
+        isGameOver: state.isGameOver,
+        scoreSaved: state.scoreSaved
     };
 }
 
-// Сохраняем текущее состояние
+// Сохраняем текущее состояние игры и историю ходов
 function saveCurrentGame() {
     saveGame(gameState, history);
 }
 
-// Обновляем отображение игры
+// Обновляем игровое поле, счёт и доступность кнопки отмены
 function updateUI(movements = null) {
     renderBoard(gameState.board, movements);
     renderScore(gameState.score);
 
-    renderUndoButton(
-        history.length > 0 && !gameState.isGameOver && !isAnimating
-    );
+    // Кнопка остаётся визуально активной во время анимации
+    // Сам обработчик undo всё равно не даст отменить ход до её завершения
+    const canUndo = history.length > 0 && !gameState.isGameOver;
+
+    renderUndoButton(canUndo);
 }
 
-// Начинаем новую игру
+// Начинаем новую игру без перезагрузки страницы
 function restartGame() {
-    // Сбрасываем блокировку и старый таймер анимации.
+    // Останавливаем старую анимацию, чтобы она не изменила новое поле
     clearTimeout(animationTimeout);
+    animationTimeout = null;
     isAnimating = false;
 
     gameState = createNewGame();
@@ -76,7 +81,7 @@ function restartGame() {
     saveCurrentGame();
 }
 
-// Обрабатываем движение плиток
+// Обрабатываем ход в одном из четырёх направлений
 function handleMove(direction) {
     if (gameState.isGameOver || isAnimating) {
         return;
@@ -84,47 +89,48 @@ function handleMove(direction) {
 
     const result = moveBoard(gameState.board, direction);
 
-    // Если поле не изменилось, ничего не делаем
+    // Если поле не изменилось, ход не засчитывается и плитка не появляется
     if (!result.moved) {
         return;
     }
 
-    // Сохраняем состояние до совершения хода
+    // Сохраняем состояние до хода, чтобы его можно было восстановить
     history.push(copyState(gameState));
 
-    // Обновляем игровое поле и счет
     gameState.board = result.board;
     gameState.score += result.score;
 
-    // После успешного хода появляется 1 или 2 новые плитки
+    // После успешного хода добавляем одну или две случайные плитки
     const tilesCount = Math.floor(Math.random() * 2) + 1;
 
     for (let i = 0; i < tilesCount; i++) {
+        // Если свободных клеток больше нет, добавить следующую плитку нельзя
         if (!addRandomTile(gameState.board)) {
             break;
         }
     }
 
-    // Проверяем, закончилась ли игра
+    // Конец игры проверяем уже после появления новых плиток
     gameState.isGameOver = checkGameOver(gameState.board);
+    gameState.scoreSaved = false;
 
     isAnimating = true;
     updateUI(result.movements);
     saveCurrentGame();
 
-    // Движение длится 180 мс, затем может идти короткий эффект слияния.
     animationTimeout = setTimeout(() => {
         isAnimating = false;
-    }, 370);
+        animationTimeout = null;
+        renderUndoButton(history.length > 0 && !gameState.isGameOver);
+    }, ANIMATION_DURATION);
 
     if (gameState.isGameOver) {
-        showGameOver(gameState.score);
+        showGameOver(gameState.score, false);
     }
 }
 
-// Отменяем предыдущий ход
+// Отменяем последний ход. После окончания игры undo недоступен
 function handleUndo() {
-    // После окончания игры отмена запрещена
     if (gameState.isGameOver || isAnimating || history.length === 0) {
         return;
     }
@@ -140,13 +146,26 @@ function handleLeaderboard() {
     showLeaderboard(loadLeaders());
 }
 
-// Сохраняем результат игры
+// Сохраняем результат только один раз за одну завершённую игру
 function handleSaveScore(name) {
-    saveLeader(name, gameState.score);
+    if (!gameState.isGameOver || gameState.scoreSaved) {
+        return;
+    }
+
+    const savedLeaders = saveLeader(name, gameState.score);
+
+    if (!savedLeaders) {
+        showSaveError();
+        return;
+    }
+
+    gameState.scoreSaved = true;
+
+    saveCurrentGame();
     showSavedMessage();
 }
 
-// Закрываем модальное окно
+// Закрываем нужное модальное окно
 function handleCloseModal(modalId) {
     if (modalId === "leaderboard-modal") {
         hideLeaderboard();
@@ -157,13 +176,16 @@ function handleCloseModal(modalId) {
     }
 }
 
-// Загружаем предыдущую игру или создаем новую
+// Загружаем сохранённую игру или создаём новую
 function initGame() {
     const savedGame = loadGame();
 
     if (savedGame) {
         gameState = savedGame.state;
         history = savedGame.history;
+
+        // Добавлено для совместимости с сохранениями старой версии игры
+        gameState.scoreSaved = gameState.scoreSaved ?? false;
     } else {
         gameState = createNewGame();
         history = [];
@@ -172,7 +194,7 @@ function initGame() {
     updateUI();
 
     if (gameState.isGameOver) {
-        showGameOver(gameState.score);
+        showGameOver(gameState.score, gameState.scoreSaved);
     }
 
     saveCurrentGame();
