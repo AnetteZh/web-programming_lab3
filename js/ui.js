@@ -86,7 +86,9 @@ function createTile(value, row, col, isNew = false) {
 
 // Полностью отрисовываем поле (например, при запуске или отмене хода)
 function renderStaticBoard(board) {
-    tilesContainer.innerHTML = "";
+    while (tilesContainer.firstChild) {
+        tilesContainer.removeChild(tilesContainer.firstChild);
+    }
 
     for (let row = 0; row < BOARD_SIZE; row++) {
         for (let col = 0; col < BOARD_SIZE; col++) {
@@ -267,7 +269,10 @@ export function showSaveError() {
 
 // Заполняем таблицу лидеров безопасно, используя textContent
 export function showLeaderboard(leaders) {
-    leaderboardBody.innerHTML = "";
+    while (leaderboardBody.firstChild) {
+        leaderboardBody.removeChild(leaderboardBody.firstChild);
+    }
+
     leaderboardModal.hidden = false;
     document.body.classList.add("modal-open");
 
